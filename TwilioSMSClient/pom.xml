@@ -4,8 +4,13 @@
     <groupId>com.iti</groupId>
     <artifactId>TwilioSMSClient</artifactId>
     <version>One</version>
-    <packaging>war</packaging>
+    <packaging>pom</packaging>
     <name>TwilioSMSClient-One</name>
+
+    <modules>
+        <module>zajel-engine</module>
+        <module>zajel-webapp</module>
+    </modules>
     
        <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -72,14 +77,6 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.2</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
         </plugins>
