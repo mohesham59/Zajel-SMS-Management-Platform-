@@ -9,13 +9,13 @@ com/sms/model/ErrCod.class
 com/sms/servlet/CustomerHomeServlet.class
 com/sms/util/HashUtil.class
 com/sms/model/Log.class
-com/sms/servlet/LogoutServlet.class
-com/sms/servlet/AdminHomeServlet.class
 com/sms/dao/ErrCodDAO.class
+com/sms/servlet/AdminHomeServlet.class
+com/sms/servlet/LogoutServlet.class
 com/sms/dao/AdminDAO.class
+com/sms/dao/LogDAO.class
 com/sms/model/Msg.class
 com/sms/servlet/AdminCustomerDeleteServlet.class
-com/sms/dao/LogDAO.class
 com/sms/dao/DBConnection.class
 com/sms/servlet/VerifyServlet.class
 com/sms/servlet/SendSmsServlet.class
@@ -24,8 +24,8 @@ com/sms/servlet/SmsHistoryServlet.class
 com/sms/filter/AuthFilter.class
 com/sms/servlet/CustomerDashboardServlet.class
 com/sms/util/PageTemplate.class
-com/sms/servlet/AdminCustomerEditServlet.class
 com/sms/servlet/LoginServlet.class
+com/sms/servlet/AdminCustomerEditServlet.class
 com/sms/dao/MsgDAO.class
 com/sms/filter/EncodingFilter.class
 com/sms/model/CustomerAddress.class
