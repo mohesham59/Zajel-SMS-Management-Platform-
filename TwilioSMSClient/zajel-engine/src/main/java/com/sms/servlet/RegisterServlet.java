@@ -4,11 +4,14 @@ import com.sms.dao.*;
 import com.sms.model.*;
 import com.sms.util.*;
 
+import com.twilio.Twilio;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
 import java.sql.Date;
+import java.util.Properties;
 
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
@@ -74,9 +77,27 @@ public class RegisterServlet extends HttpServlet {
         }
 
         LogDAO.log(req.getRemoteAddr(), "REGISTER: " + email);
+        
+        try (InputStream input = TwilioHelper.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                throw new IllegalStateException("Sorry, unable to find config.properties in classpath. Ensure it exists in your resources folder.");
+            }
+            Properties props = new Properties();
 
-        try {
-            TwilioHelper.sendSms(sid, token, senderid, msisdn,
+            // Load all properties from the file
+            props.load(input);
+
+            String accountSid = props.getProperty("twilio.sid");
+            String authToken = props.getProperty("twilio.token");
+            String twilioNumber = props.getProperty("twilio.number");
+
+            if (accountSid == null || authToken == null || twilioNumber == null) {
+                throw new IllegalStateException("One or more Twilio keys are missing from config.properties!");
+            }
+
+            // Initialize the Twilio SDK using the loaded keys
+            Twilio.init(accountSid, authToken);
+            TwilioHelper.sendSms(accountSid, authToken, twilioNumber, msisdn,
                     "Welcome to Zajel! Your verification code is: " + code);
         } catch (Exception e) {
             e.printStackTrace();

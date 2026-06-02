@@ -1,23 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.sms.servlet;
 
 import com.sms.dao.*;
 import com.sms.model.Customer;
 import com.sms.util.*;
+import com.twilio.Twilio; // Import Twilio SDK
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
-
-/**
- *
- * @author mohesham
- */
-
+import java.util.Properties;
 
 @WebServlet("/verify")
 public class VerifyServlet extends HttpServlet {
@@ -29,7 +21,6 @@ public class VerifyServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath()+"/login");
             return;
         }
-
         req.getRequestDispatcher("/WEB-INF/views/auth/verify.jsp").forward(req, resp);
     }
 
@@ -43,18 +34,39 @@ public class VerifyServlet extends HttpServlet {
         int custId = (int) s.getAttribute("unverified_id");
         CustomerDAO dao = new CustomerDAO();
         Customer cu = dao.findById(custId);
-        if (cu == null) { resp.sendRedirect(req.getContextPath()+"/login?error=User+not+found"); return; }
+        if (cu == null) { 
+            resp.sendRedirect(req.getContextPath()+"/login?error=User+not+found"); 
+            return; 
+        }
 
         String action = req.getParameter("action");
         if ("resend".equals(action)) {
             String code = TwilioHelper.generateCode();
             s.setAttribute("verify_code", code);
-            try {
-                TwilioHelper.sendSms(cu.getSid(), cu.getToken(),
-                        cu.getMsisdn(), cu.getMsisdn(), "Your new code: " + code);
+            
+            try (InputStream input = TwilioHelper.class.getClassLoader().getResourceAsStream("config.properties")) {
+                if (input == null) {
+                    throw new IllegalStateException("Unable to find config.properties in classpath.");
+                }
+                Properties props = new Properties();
+                props.load(input);
+
+                String accountSid = props.getProperty("twilio.sid");
+                String authToken = props.getProperty("twilio.token");
+                String twilioNumber = props.getProperty("twilio.number");
+
+                if (accountSid == null || authToken == null || twilioNumber == null) {
+                    throw new IllegalStateException("One or more Twilio keys are missing from config.properties!");
+                }
+
+                Twilio.init(accountSid, authToken);
+                
+                TwilioHelper.sendSms(accountSid, authToken, twilioNumber, cu.getMsisdn(), "Your new code: " + code);
+                
                 resp.sendRedirect(req.getContextPath()+"/verify?info=New+code+sent!");
             } catch (Exception e) {
-                resp.sendRedirect(req.getContextPath()+"/verify?error=SMS+failed:+" + e.getMessage());
+                e.printStackTrace();
+                resp.sendRedirect(req.getContextPath()+"/verify?error=SMS+failed:+" + java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
             }
             return;
         }
