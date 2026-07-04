@@ -87,9 +87,9 @@ public class RegisterServlet extends HttpServlet {
             // Load all properties from the file
             props.load(input);
 
-            String accountSid = props.getProperty("twilio.sid");
-            String authToken = props.getProperty("twilio.token");
-            String twilioNumber = props.getProperty("twilio.number");
+            String accountSid = props.getProperty("twilio.sid") != null ? props.getProperty("twilio.sid").trim().replaceAll("^\"|\"$", "") : null;
+            String authToken = props.getProperty("twilio.token") != null ? props.getProperty("twilio.token").trim().replaceAll("^\"|\"$", "") : null;
+            String twilioNumber = props.getProperty("twilio.number") != null ? props.getProperty("twilio.number").trim().replaceAll("^\"|\"$", "") : null;
 
             if (accountSid == null || authToken == null || twilioNumber == null) {
                 throw new IllegalStateException("One or more Twilio keys are missing from config.properties!");

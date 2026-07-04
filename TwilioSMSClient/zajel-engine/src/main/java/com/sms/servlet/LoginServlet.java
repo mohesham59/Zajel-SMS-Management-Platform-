@@ -66,7 +66,22 @@ public class LoginServlet extends HttpServlet {
             if (!cu.isVerified()) {
                 HttpSession s = req.getSession(true);
                 s.setAttribute("unverified_id", cu.getCustomerId());
-                resp.sendRedirect(ctx + "/verify");
+                
+                String code = cu.getVerificationCode();
+                if (code == null || code.isEmpty()) {
+                    code = com.sms.util.TwilioHelper.generateCode();
+                    new CustomerDAO().updateVerificationCode(cu.getCustomerId(), code);
+                }
+                
+                s.setAttribute("verify_code", code);
+                
+                try {
+                    com.sms.util.TwilioHelper.sendVerificationCode(cu.getMsisdn(), code);
+                    resp.sendRedirect(ctx + "/verify?info=Verification+code+sent+to+your+phone");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    resp.sendRedirect(ctx + "/verify?error=Failed+to+send+SMS:+" + java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
+                }
                 return;
             }
             HttpSession s = req.getSession(true);

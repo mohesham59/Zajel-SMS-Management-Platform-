@@ -34,6 +34,8 @@ CREATE TABLE customers (
     customer_address customer_address_type,
     sid              TEXT,          -- Twilio Account SID
     token            TEXT,          -- Twilio Auth Token
+    is_verified      BOOLEAN NOT NULL DEFAULT FALSE,
+    verification_code TEXT,
     created_at       TIMESTAMPTZ DEFAULT NOW()
 );
 

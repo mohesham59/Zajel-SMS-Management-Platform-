@@ -43,26 +43,10 @@ public class VerifyServlet extends HttpServlet {
         if ("resend".equals(action)) {
             String code = TwilioHelper.generateCode();
             s.setAttribute("verify_code", code);
+            dao.updateVerificationCode(cu.getCustomerId(), code);
             
-            try (InputStream input = TwilioHelper.class.getClassLoader().getResourceAsStream("config.properties")) {
-                if (input == null) {
-                    throw new IllegalStateException("Unable to find config.properties in classpath.");
-                }
-                Properties props = new Properties();
-                props.load(input);
-
-                String accountSid = props.getProperty("twilio.sid");
-                String authToken = props.getProperty("twilio.token");
-                String twilioNumber = props.getProperty("twilio.number");
-
-                if (accountSid == null || authToken == null || twilioNumber == null) {
-                    throw new IllegalStateException("One or more Twilio keys are missing from config.properties!");
-                }
-
-                Twilio.init(accountSid, authToken);
-                
-                TwilioHelper.sendSms(accountSid, authToken, twilioNumber, cu.getMsisdn(), "Your new code: " + code);
-                
+            try {
+                TwilioHelper.sendVerificationCode(cu.getMsisdn(), code);
                 resp.sendRedirect(req.getContextPath()+"/verify?info=New+code+sent!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -79,6 +63,7 @@ public class VerifyServlet extends HttpServlet {
         }
 
         cu.setVerified(true);
+        dao.markVerified(cu.getCustomerId());
         s.removeAttribute("unverified_id");
         s.removeAttribute("verify_code");
         s.setAttribute("customer", cu);

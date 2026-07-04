@@ -3,24 +3,35 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.sms.dao;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 /**
  *
  * @author mohesham
  */
 
 public class DBConnection {
-    private static final String URL  = "jdbc:postgresql://ep-rough-meadow-al3gfr4v-pooler.c-3.eu-central-1.aws.neon.tech/sms?user=neondb_owner&password=npg_9coMTQXK5guk&sslmode=require&channelBinding=require";
-    private static final String USER = "postgres";
-    private static final String PASS = "postgres"; // Change to your password
+    private static String URL;
+    private static String USER;
+    private static String PASS;
 
     static {
-        try {
+        try (InputStream input = DBConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
+            Properties prop = new Properties();
+            if (input == null) {
+                throw new RuntimeException("Sorry, unable to find db.properties in the classpath!");
+            } else {
+                prop.load(input);
+                URL = prop.getProperty("db.url");
+                USER = prop.getProperty("db.user");
+                PASS = prop.getProperty("db.password");
+            }
             Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("PostgreSQL Driver not found!", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error initializing database connection or driver!", e);
         }
     }
 
