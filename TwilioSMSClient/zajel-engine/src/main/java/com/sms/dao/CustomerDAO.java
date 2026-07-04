@@ -71,8 +71,8 @@ public class CustomerDAO {
     // ═══════════════════════════════════════════════
     public boolean register(Customer cu) {
         String sql = "INSERT INTO customers "
-            + "(name,email,passwd,msisdn,birthday,job,customer_address,sid,token) "
-            + "VALUES (?,?,?,?,?,?,ROW(?,?,?,?,?)::customer_address_type,?,?)";
+            + "(name,email,passwd,msisdn,birthday,job,customer_address,sid,token,verification_code) "
+            + "VALUES (?,?,?,?,?,?,ROW(?,?,?,?,?)::customer_address_type,?,?,?)";
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -107,6 +107,7 @@ public class CustomerDAO {
 
             ps.setString(12, cu.getSid());
             ps.setString(13, cu.getToken());
+            ps.setString(14, cu.getVerificationCode());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -252,9 +253,37 @@ public class CustomerDAO {
         cu.setToken(rs.getString("token"));
         cu.setCreatedAt(rs.getTimestamp("created_at"));
 
-        cu.setVerified(true);
+        cu.setVerified(rs.getBoolean("is_verified"));
+        cu.setVerificationCode(rs.getString("verification_code"));
 
         return cu;
+    }
+
+    // ═══════════════════════════════════════════════
+    // MARK VERIFIED — Persist verification to DB
+    // ═══════════════════════════════════════════════
+    public boolean markVerified(int customerId) {
+        String sql = "UPDATE customers SET is_verified = true, verification_code = NULL WHERE customer_id = ?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // ═══════════════════════════════════════════════
+    // UPDATE VERIFICATION CODE
+    // ═══════════════════════════════════════════════
+    public boolean updateVerificationCode(int customerId, String code) {
+        String sql = "UPDATE customers SET verification_code = ? WHERE customer_id = ?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, code);
+            ps.setInt(2, customerId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
     }
 
     // ═══════════════════════════════════════════════

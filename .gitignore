@@ -1,2 +1,5 @@
 TwilioSMSClient/target/
 TwilioSMSClient/nb-configuration.xml
+
+**/db.properies
+**/config.properties
